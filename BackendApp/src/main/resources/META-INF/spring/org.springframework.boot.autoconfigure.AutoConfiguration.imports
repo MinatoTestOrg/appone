@@ -1,0 +1,3 @@
+com.minatogitorg.appone.config.ApplicationRepositoriesAutoConfiguration
+com.minatogitorg.appone.config.ApplicationTransactionManagersAutoConfig
+com.minatogitorg.appone.config.ApplicationProvidersAutoConfiguration

@@ -1,0 +1,165 @@
+name: Deployment script
+run-name: Deployment Runner 
+on: [push, workflow_dispatch]
+
+env:
+  IMAGE_NAME: ${{secrets.REGION_ID}}-docker.pkg.dev/${{secrets.GCP_PROJECT_ID}}/appone-repository/appone
+  VPC_CONNECTOR: evamodeller
+  REGION_ID: europe-west1
+
+jobs:
+  dev-deployment:
+    if: contains( 'refs/heads/development', github.ref)
+    runs-on: ubuntu-latest
+    container: node:16-alpine
+    steps:
+    - name: Setting up environment for build...
+      run: |
+        apk add --no-cache git maven bash curl wget
+        apk --no-cache add openjdk17-jdk
+        apk add --no-cache python3 py3-pip
+    
+    - name: Checking out the code...
+      uses: actions/checkout@v3
+    
+    - name: Github authentication
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{secrets.SERVICE_ACCOUNT_KEYFILE_JSON}}
+      
+    - name: Building project...
+      run: |
+        sed -i 's/pipelineuser/${{secrets.env.ARTIFACTORY_USER}}/' .m2/settings.xml
+        sed -i 's/V@nenburg%1/${{secrets.env.ARTIFACTORY_PASS}}/' .m2/settings.xml
+        npm install -g @angular/cli
+        mvn -s .m2/settings.xml --batch-mode clean install
+        mvn -f BackendApp/pom.xml jib:build -P cloud-run-dev -s .m2/settings.xml --batch-mode -X -D IMAGE_VERSION_ID=${{secrets.IMAGE_VERSION_ID}} -D COMMIT_ID=${GITHUB_SHA}
+
+    - name: Login
+      uses: google-github-actions/setup-gcloud@v0
+      with:
+        project_id: ${{secrets.GCP_PROJECT_ID}}
+        service_account_email: ${{secrets.GCP_EMAIL}}
+        service_account_key: ${{secrets.SERVICE_ACCOUNT_KEYFILE_JSON}}
+    
+    - name: Deploying image...
+      run: |
+        export CLOUDSDK_CORE_DISABLE_PROMPTS=1
+        gcloud beta run deploy csf --use-http2 --service-account=${{secrets.CLOUD_RUN_DEFAULT_SERVICE_ACCOUNT}} --image=${{env.IMAGE_NAME}} --vpc-connector=${{env.VPC_CONNECTOR}} --region=${{env.REGION_ID}} --platform=managed --timeout=600s --concurrency=80 --no-use-http2 --allow-unauthenticated --quiet --vpc-egress=all-traffic --user-output-enabled --port=9090 --max-instances=10 --min-instances=0 --cpu=2 --memory=1Gi --set-env-vars JAVA_TOOL_OPTIONS="-Xss256k" --execution-environment=gen2 --update-secrets=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-ID=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-ID:latest,SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-SECRET=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-SECRET:latest
+  
+  pre-prod-deployment:
+    if: contains( 'refs/heads/pre-prod', github.ref)
+    runs-on: ubuntu-latest
+    container: node:16-alpine
+    steps:
+    - name: Setting up environment for build...
+      run: |
+        apk add --no-cache git maven bash curl wget
+        apk --no-cache add openjdk17-jdk
+        apk add --no-cache python3 py3-pip
+    
+    - name: Checking out the code...
+      uses: actions/checkout@v3
+    
+    - name: Github authentication
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{secrets.SERVICE_ACCOUNT_KEYFILE_JSON}}
+      
+    - name: Building project...
+      run: |
+        sed -i 's/pipelineuser/${{secrets.env.ARTIFACTORY_USER}}/' .m2/settings.xml
+        sed -i 's/V@nenburg%1/${{secrets.env.ARTIFACTORY_PASS}}/' .m2/settings.xml
+        npm install -g @angular/cli
+        mvn -s .m2/settings.xml --batch-mode clean install
+        mvn -f BackendApp/pom.xml jib:build -P cloud-run-pre-prod -s .m2/settings.xml --batch-mode -X -D IMAGE_VERSION_ID=${{secrets.IMAGE_VERSION_ID}} -D COMMIT_ID=${GITHUB_SHA}
+
+    - name: Login
+      uses: google-github-actions/setup-gcloud@v0
+      with:
+        project_id: ${{secrets.GCP_PROJECT_ID}}
+        service_account_email: ${{secrets.GCP_EMAIL}}
+        service_account_key: ${{secrets.SERVICE_ACCOUNT_KEYFILE_JSON}}
+    
+    - name: Deploying image...
+      run: |
+        export CLOUDSDK_CORE_DISABLE_PROMPTS=1
+        gcloud beta run deploy csf --use-http2 --service-account=${{secrets.CLOUD_RUN_DEFAULT_SERVICE_ACCOUNT}} --image=${{env.IMAGE_NAME}} --vpc-connector=${{env.VPC_CONNECTOR}} --region=${{env.REGION_ID}} --platform=managed --timeout=600s --concurrency=80 --no-use-http2 --allow-unauthenticated --quiet --vpc-egress=all-traffic --user-output-enabled --port=9090 --max-instances=10 --min-instances=0 --cpu=2 --memory=1Gi --set-env-vars JAVA_TOOL_OPTIONS="-Xss256k" --execution-environment=gen2 --update-secrets=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-ID=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-ID:latest,SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-SECRET=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-SECRET:latest
+  
+  test-deployment:
+    if: contains( 'refs/heads/test', github.ref)
+    runs-on: ubuntu-latest
+    container: node:16-alpine
+    steps:
+    - name: Setting up environment for build...
+      run: |
+        apk add --no-cache git maven bash curl wget
+        apk --no-cache add openjdk17-jdk
+        apk add --no-cache python3 py3-pip
+    
+    - name: Checking out the code...
+      uses: actions/checkout@v3
+    
+    - name: Github authentication
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{secrets.SERVICE_ACCOUNT_KEYFILE_JSON}}
+      
+    - name: Building project...
+      run: |
+        sed -i 's/pipelineuser/${{secrets.env.ARTIFACTORY_USER}}/' .m2/settings.xml
+        sed -i 's/V@nenburg%1/${{secrets.env.ARTIFACTORY_PASS}}/' .m2/settings.xml
+        npm install -g @angular/cli
+        mvn -s .m2/settings.xml --batch-mode clean install
+        mvn -f BackendApp/pom.xml jib:build -P cloud-run-test -s .m2/settings.xml --batch-mode -X -D IMAGE_VERSION_ID=${{secrets.IMAGE_VERSION_ID}} -D COMMIT_ID=${GITHUB_SHA}
+
+    - name: Login
+      uses: google-github-actions/setup-gcloud@v0
+      with:
+        project_id: ${{secrets.GCP_PROJECT_ID}}
+        service_account_email: ${{secrets.GCP_EMAIL}}
+        service_account_key: ${{secrets.SERVICE_ACCOUNT_KEYFILE_JSON}}
+    
+    - name: Deploying image...
+      run: |
+        export CLOUDSDK_CORE_DISABLE_PROMPTS=1
+        gcloud beta run deploy csf --use-http2 --service-account=${{secrets.CLOUD_RUN_DEFAULT_SERVICE_ACCOUNT}} --image=${{env.IMAGE_NAME}} --vpc-connector=${{env.VPC_CONNECTOR}} --region=${{env.REGION_ID}} --platform=managed --timeout=600s --concurrency=80 --no-use-http2 --allow-unauthenticated --quiet --vpc-egress=all-traffic --user-output-enabled --port=9090 --max-instances=10 --min-instances=0 --cpu=2 --memory=1Gi --set-env-vars JAVA_TOOL_OPTIONS="-Xss256k" --execution-environment=gen2 --update-secrets=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-ID=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-ID:latest,SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-SECRET=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-SECRET:latest
+  
+  prod-deployment:
+    if: contains( 'refs/heads/prod', github.ref)
+    runs-on: ubuntu-latest
+    container: node:16-alpine
+    steps:
+    - name: Setting up environment for build...
+      run: |
+        apk add --no-cache git maven bash curl wget
+        apk --no-cache add openjdk17-jdk
+        apk add --no-cache python3 py3-pip
+    
+    - name: Checking out the code...
+      uses: actions/checkout@v3
+    
+    - name: Github authentication
+      uses: google-github-actions/auth@v1
+      with:
+        credentials_json: ${{secrets.SERVICE_ACCOUNT_KEYFILE_JSON}}
+      
+    - name: Building project...
+      run: |
+        sed -i 's/pipelineuser/${{secrets.env.ARTIFACTORY_USER}}/' .m2/settings.xml
+        sed -i 's/V@nenburg%1/${{secrets.env.ARTIFACTORY_PASS}}/' .m2/settings.xml
+        npm install -g @angular/cli
+        mvn -s .m2/settings.xml --batch-mode clean install
+        mvn -f BackendApp/pom.xml jib:build -P cloud-run-prod -s .m2/settings.xml --batch-mode -X -D IMAGE_VERSION_ID=${{secrets.IMAGE_VERSION_ID}} -D COMMIT_ID=${GITHUB_SHA}
+
+    - name: Login
+      uses: google-github-actions/setup-gcloud@v0
+      with:
+        project_id: ${{secrets.GCP_PROJECT_ID}}
+        service_account_email: ${{secrets.GCP_EMAIL}}
+        service_account_key: ${{secrets.SERVICE_ACCOUNT_KEYFILE_JSON}}
+    
+    - name: Deploying image...
+      run: |
+        export CLOUDSDK_CORE_DISABLE_PROMPTS=1
+        gcloud beta run deploy csf --use-http2 --service-account=${{secrets.CLOUD_RUN_DEFAULT_SERVICE_ACCOUNT}} --image=${{env.IMAGE_NAME}} --vpc-connector=${{env.VPC_CONNECTOR}} --region=${{env.REGION_ID}} --platform=managed --timeout=600s --concurrency=80 --no-use-http2 --allow-unauthenticated --quiet --vpc-egress=all-traffic --user-output-enabled --port=9090 --max-instances=10 --min-instances=0 --cpu=2 --memory=1Gi --set-env-vars JAVA_TOOL_OPTIONS="-Xss256k" --execution-environment=gen2 --update-secrets=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-ID=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-ID:latest,SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-SECRET=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT-SECRET:latest
