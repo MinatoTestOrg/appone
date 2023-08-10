@@ -226,8 +226,8 @@ confirmationReference:any;
 	
 		detailFormControls : UntypedFormGroup = new UntypedFormGroup({
 	lastName: new UntypedFormControl('',[]),
-	email: new UntypedFormControl('',[]),
 	firstName: new UntypedFormControl('',[]),
+	email: new UntypedFormControl('',[]),
 });
 
 
