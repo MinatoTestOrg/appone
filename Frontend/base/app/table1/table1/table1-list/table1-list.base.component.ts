@@ -248,8 +248,8 @@ tableSearchFieldConfig:any = {};
 	pageViewTitle: string = 'TABLE1_LIST';
 	
 		tableSearchControls : UntypedFormGroup = new UntypedFormGroup({
-	field2: new UntypedFormControl('',[]),
 	field1: new UntypedFormControl('',[]),
+	field2: new UntypedFormControl('',[]),
 });
 
 		quickFilterControls : UntypedFormGroup = new UntypedFormGroup({

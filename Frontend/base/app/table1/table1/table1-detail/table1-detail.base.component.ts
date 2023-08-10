@@ -221,8 +221,8 @@ confirmationReference:any;
 	pageViewTitle: string = 'TABLE1_DETAIL';
 	
 		detailFormControls : UntypedFormGroup = new UntypedFormGroup({
-	field1: new UntypedFormControl('',[]),
 	field2: new UntypedFormControl('',[]),
+	field1: new UntypedFormControl('',[]),
 });
 
 
