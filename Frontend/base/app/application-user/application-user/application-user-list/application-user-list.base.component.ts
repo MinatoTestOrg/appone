@@ -271,8 +271,8 @@ tableSearchFieldConfig:any = {};
 	
 		tableSearchControls : UntypedFormGroup = new UntypedFormGroup({
 	lastName: new UntypedFormControl('',[]),
-	firstName: new UntypedFormControl('',[]),
 	email: new UntypedFormControl('',[]),
+	firstName: new UntypedFormControl('',[]),
 });
 
 		quickFilterControls : UntypedFormGroup = new UntypedFormGroup({
