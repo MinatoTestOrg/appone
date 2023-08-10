@@ -40,6 +40,8 @@ public abstract class Table1BaseController<SERVICE extends ITable1BaseService<M>
 	public Table1BaseController(SERVICE logic) {
 		super(logic);
 	}
+	
+	
 	@PreAuthorize("hasAccess('/table1s/{sid}')")
 	@GetMapping(path = "/{sid}", produces = "application/json")
 	public M getById(@PathVariable("sid") Primary sid) {

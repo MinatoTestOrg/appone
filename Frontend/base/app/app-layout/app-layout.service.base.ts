@@ -1,64 +1,22 @@
-import { Injectable ,inject } from '@angular/core';
+import { Injectable,inject } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { Title } from '@angular/platform-browser';
-import { environment } from '@env/environment';
 import { AppGlobalService } from '@baseapp/app-global.service';
-
+import { environment } from '@env/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AppLayoutBaseService {
+  private displayMenu = new Subject<boolean>();
+  private menuType: string = 'float';
   private displayLeftMenu = new Subject<boolean>();
   private displayRightMenu = new Subject<boolean>();
-  private menuType: string = 'float'
-  public titleService = inject(Title);
-  public appGlobalService =inject(AppGlobalService) 
   
+   public titleService = inject(Title)
+   public appGlobalService = inject(AppGlobalService);
+  config : any = {"left":[{"element":"logo"},{"element":"leftMenu","menuType":"fixed"},{"element":"appTitle"}],"middle":[{"element":"leftPane"},{"element":"middlePane"},{"element":"rightPane"}],"right":[{"element":"user","children":[{"element":"userMenu"}]},{"element":"rightMenu","menuType":"float"},{"element":"navigationTabs","menuType":"float"}]};
 
-  config: any = {
-    "left": [{
-      "element": "leftMenu",
-      "menuType": "float",
-      "dummy": "1651125236684",
-      "currentNode": "leftMenu",
-      "valueChange": "true",
-      "hideSidebarOnCollapse": "false"
-    }, {
-      "element": "logo",
-      "dummy": "1651125237268",
-      "currentNode": "logo",
-      "valueChange": "true"
-    }, {
-      "element": "appTitle"
-    }],
-    "middle": [{
-      "element": "leftPane",
-
-    }, {
-      "element": "middlePane",
-
-    }, {
-      "element": "rightPane",
-
-    }],
-    "right": [{
-      "element": "user",
-      "imageField": "",
-      "shape": "",
-      "size": "",
-      "dummy": "1651148370635",
-      "currentNode": "user",
-      "valueChange": "true"
-    }, {
-      "element": "rightMenu",
-      "menuType": "fixed",
-      "dummy": "1651148334546",
-      "currentNode": "rightMenu",
-      "valueChange": "true",
-
-    }]
-  };
   public getLeftMenuVisibility(): Observable<boolean> {
     return this.displayLeftMenu.asObservable();
   }
@@ -102,7 +60,7 @@ export class AppLayoutBaseService {
             styleObj[key] = item[key];
           }
         }
-        else if(key =="backgroundColor") {
+        else if(key == "backgroundColor") {
           styleObj['background-color'] = item['backgroundColor'];
         }
       }
@@ -116,28 +74,6 @@ export class AppLayoutBaseService {
       observer.next(data as any);
     });
     return subject;
-  }
-
-  getMenu() {
-    let menuData: any;
-    if (environment.prototype) {
-      this.getConfigData().subscribe((response) => {
-        menuData = response;
-      })
-    }
-    else {
-      let currentUserData = this.appGlobalService.get('currentUser');
-      if(Array.isArray(currentUserData))
-      menuData = (currentUserData[0]) ? JSON.parse(currentUserData[0].menuRole) : {}
-   else
-     menuData = JSON.parse(currentUserData.menuRole);
-    }
-   menuData = this.customizeMenuContent(menuData);
-    return menuData;
-  }
-  
-  customizeMenuContent(menu: any) {
-    return menu;
   }
   
   public setAppTitle() {
@@ -155,5 +91,22 @@ export class AppLayoutBaseService {
     } else {
       favIcon.href = `assets/images/` + appLogoObj.logoFileName;
     }
+  }
+getMenu() {
+    let menuData: any;
+    if (environment.prototype) {
+      this.getConfigData().subscribe((response) => {
+        menuData = response;
+      })
+    }
+    else {
+      let currentUserData = this.appGlobalService.getCurrentUserData();
+      menuData = currentUserData ? JSON.parse(currentUserData.menuRole) : {};
+    }
+    menuData = this.customizeMenuContent(menuData);
+    return menuData;
+  }
+customizeMenuContent(menu: any) {
+    return menu;
   }
 }

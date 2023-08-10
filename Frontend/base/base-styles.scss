@@ -55,7 +55,6 @@ body {
 .icon-height{
   height:100%;
 }
-
 .cursor-pointer {
   cursor: pointer;
 }
@@ -69,7 +68,17 @@ body {
   text-overflow: ellipsis;
   // white-space: nowrap;
 }
+.form-control:focus{
+  box-shadow: none !important;
+}
 
+.p-inputtext:enabled:focus{
+  box-shadow: none !important;
+}
+.p-menuitem-text{
+  font-size:$button-font-size
+ 
+}
 
 .p-datatable-scrollable .p-datatable-thead>tr,
 .p-datatable-scrollable .p-datatable-tbody>tr,
@@ -91,11 +100,6 @@ body {
   display: flex;
   flex: 1 1 0;
   align-items: center;
-}
-
-.p-menuitem-text{
-  font-size:$button-font-size
- 
 }
 
 .p-dialog-top .p-dialog,
@@ -1183,9 +1187,7 @@ body {
 
   .icon-font {
     font-size: 1.6rem;
-
-    color:  $search-text-color;
-
+    color: $search-text-color;
   }
   .p-inputtext:enabled:focus {
     box-shadow: none;
@@ -2294,6 +2296,7 @@ body {
 .my-3 {
   margin-bottom: 1rem !important;
 }
+
 .ml-3,
 .mx-3 {
   margin-left: 1rem !important;
@@ -3066,10 +3069,13 @@ p-fileUpload {
     .p-fileupload-content {
       width: calc(100% - 85px);
       // padding: 7px;
-      padding-top: 9px;
+      // padding-top: 9px;
       // min-height: 43px;
       border: 0;
       border-radius: 8px;
+      min-height: calc(2.6rem + 6px);;
+      height: auto;
+      padding: 0.5rem 1rem 0.25rem 1rem;
 
       .p-fileupload-files {
         white-space: nowrap;
@@ -3442,9 +3448,6 @@ p-multiselect {
   }
 }
 .confirm-popup-container{
-  .p-inputtextarea{
-    width: 100%;
-  }
   .p-dialog-title {
     font-size: 1.70rem !important;
   }
@@ -3794,7 +3797,6 @@ p-multiselect {
 }
 
 .p-autocomplete-panel {
-
   .p-autocomplete-items{
     .p-autocomplete-item:hover {
       color: $primary-color;
@@ -3879,13 +3881,13 @@ p-multiselect {
   }
 }
 .workflow-history {
+
   .p-dialog-title {
     font-size: 1.6rem !important;
     font-family: 'Poppins';
     font-weight: 400 !important;
   }
 }
-
 
 /****************** Datatable Styles Start ************/
 
@@ -4535,7 +4537,6 @@ table {
 }
 
 //Sorting Icon
-
 table.dataTable thead>tr>th.sorting_disabled:before,
 table.dataTable thead>tr>th.sorting_disabled:after
 {
@@ -4961,7 +4962,7 @@ th .chk-select {
       box-sizing: border-box !important;
   
     }
-
+  
      .dataTables_wrapper .dataTables_scroll .dataTables_scrollBody table tbody td.showMobile {
       padding: 0.5rem 1rem !important;
     }
@@ -5048,6 +5049,16 @@ th .chk-select {
   }
   
   }
+
+
+  .dataTables_scrollHead table tr {
+    &.scrollbar-enabled {
+      th:nth-last-child(2) {
+        border-right: 15px solid transparent;
+      }
+    }
+  }
+  
 /***************** Gridster Styles Ends ***************/
 
 #BACK { 
@@ -5135,7 +5146,7 @@ td.importErrorDetails.showMobile {
 /***************** Imports Styles Ends ***************/
 
 
-/***************** Exports Styles Start ***************/
+/***************** EXports Styles Start ***************/
 
 .export-dialog-box .form-container {
   margin: 0;
@@ -5169,13 +5180,11 @@ td.importErrorDetails.showMobile {
 
 }
 
-
 .tippy-box {
   word-break: break-word !important;
 }
 
 .export-history-list {
-
   .INITIATED,
   .IN_PROGRESS {
     background-color: #1A73E833;
@@ -5203,7 +5212,6 @@ td.importErrorDetails.showMobile {
   }
 
 }
-
 .optional-filter-control{
   .p-inputtext{
       height: auto !important;
